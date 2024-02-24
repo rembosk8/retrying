@@ -8,7 +8,7 @@ import (
 )
 
 // ErrChan a chanel for handling errors from polling function.
-type ErrChan <-chan error
+type ErrChan ValChan[error]
 
 // ValChan a chanel for handling value result from polling function.
 type ValChan[T any] <-chan T
@@ -19,7 +19,7 @@ type GetFunc[T any] func() (T, error)
 // CancelFunc function to cancel polling.
 type CancelFunc = context.CancelFunc
 
-// Poll is calling function fn N seconds ( 1 second by default, could be changed with WithInterval option) until
+// Poll is calling function fn every N seconds ( 1 second by default, could be changed with WithInterval option) until
 //
 //	fn returns ErrInterrupt or CancelFunc is called.
 func Poll(ctx context.Context, fn func(ctx context.Context) error, ops ...Option) CancelFunc {
@@ -58,6 +58,13 @@ func updateChan[T any](v T, ch chan T) {
 	ch <- v
 }
 
+// PollReturn executes fn function in the loop and sends results of the function into the chan(ValChan[T]).
+//
+//	If nobody reads from the chan between iterations the chan is updated with the latest result.
+//	If fn function returns an error, the error is sent into ErrChan.
+//	To stop polling the CancelFunc can be called, or fn function should return ErrInterrupt error, or parent ctx should
+//	    return ctx.Done.
+//	Interval between fn calls can be configured via ops WithInterval
 func PollReturn[T any](ctx context.Context, fn func(ctx context.Context) (T, error), ops ...Option) (ValChan[T], ErrChan, CancelFunc) {
 	ch := make(chan T, 1)
 	er := make(chan error, 1)
@@ -98,6 +105,12 @@ func PollReturn[T any](ctx context.Context, fn func(ctx context.Context) (T, err
 	return ch, er, cancel
 }
 
+// PollWithGetFunc executes fn function in the loop and keep results inside. The results can be gotten with GetFunc[T].
+//
+//	If fn function returns an error, the error is sent into ErrChan.
+//	To stop polling the CancelFunc can be called, or fn function should return ErrInterrupt error, or parent ctx should
+//	    return ctx.Done.
+//	Interval between fn calls can be configured via ops WithInterval
 func PollWithGetFunc[T any](
 	ctx context.Context,
 	fn func(ctx context.Context) (T, error),
