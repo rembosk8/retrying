@@ -66,7 +66,7 @@ func ExampleReturn_third() {
 	interruptFn := func(ctx context.Context) (bool, error) {
 		if time.Now().After(time.Now().Add(-1 * time.Hour)) {
 			fmt.Println("There is no reason to continue to retry the function")
-			return false, fmt.Errorf("test: %w", retrying.Interrupt(nil))
+			return false, retrying.Interrupt(nil)
 		}
 		fmt.Println("success")
 

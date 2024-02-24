@@ -157,9 +157,7 @@ linters:
     #- varnamelen # [great idea, but too many false positives] checks that the length of a variable's name matches its scope
     - wastedassign # wastedassign finds wasted assignment statements.
     - whitespace # Tool for detection of leading and trailing whitespace
-    # todo Review linter using
-    - wrapcheck # Checks that errors returned from external packages are wrapped
-    # todo Review linter using
+    # - wrapcheck # Checks that errors returned from external packages are wrapped
     # - wsl # [too strict and mostly code is not more readable] Whitespace Linter - Forces you to use empty lines!
 
     ## deprecated
