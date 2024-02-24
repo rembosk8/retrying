@@ -82,7 +82,7 @@ func TestReturn(t *testing.T) {
 				},
 				ops: nil,
 			},
-			retError: retrying.ErrInterrupt,
+			retError: errTest,
 			fnError:  errTest,
 		},
 	}

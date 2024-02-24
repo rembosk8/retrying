@@ -22,8 +22,9 @@ func Exec(ctx context.Context, fn func(ctx context.Context) error, ops ...Option
 //
 //	 If you need to return many values then combine them into a struct.
 //		Default behavior for timeout and interval could be changed via Options.
-//		To force exit from retry loop fn should return ErrInterrupt error.
+//		To force exit from retry loop fn should wrap/return retrying.Interrupt(err).
 func Return[T any](ctx context.Context, fn func(ctx context.Context) (T, error), ops ...Option) (t T, err error) {
+	var intErr interruptError
 	p := newSettings(ops...)
 	ctx, cancel := context.WithTimeout(ctx, p.Duration)
 	defer cancel()
@@ -37,8 +38,8 @@ func Return[T any](ctx context.Context, fn func(ctx context.Context) (T, error),
 			return t, nil
 		}
 		// in case err is ErrInterrupt - stop
-		if errors.Is(err, ErrInterrupt) {
-			return t, err
+		if errors.As(err, &intErr) {
+			return t, intErr.err
 		}
 		// in case OnErrors is not empty and err not in OnErrors - stop
 		if p.OnErrors != nil && !errors.Is(err, p.OnErrors) {

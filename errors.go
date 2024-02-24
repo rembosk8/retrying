@@ -9,14 +9,20 @@ var (
 	ErrTimeout = errors.New("timeout")
 )
 
+// Interrupt wrap method to force retrying to stop.
+//
+//	err - (optional) initial error.
 func Interrupt(err error) error {
-	return errors.Join(err, ErrInterrupt)
+	if err == nil {
+		return interruptError{err: ErrInterrupt}
+	}
+	return interruptError{err: err}
 }
 
-type errInterrupt struct {
+type interruptError struct {
 	err error
 }
 
-func (e errInterrupt) Error() string {
+func (e interruptError) Error() string {
 	return e.err.Error()
 }
